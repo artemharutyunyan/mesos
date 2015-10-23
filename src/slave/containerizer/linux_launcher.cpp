@@ -178,6 +178,21 @@ Try<Launcher*> LinuxLauncher::create(const Flags& flags)
 }
 
 
+bool LinuxLauncher::isAvailable() {
+  // Make sure cgroups are enabled.
+  if (!cgroups::enabled()) {
+    return false;
+  }
+
+  // Make sure freezer subsystem is available.
+  Result<std::string> freezer = cgroups::hierarchy("freezer");
+  if (freezer.isError() || freezer.isNone())
+    return false;
+
+  return true;
+}
+
+
 Future<hashset<ContainerID>> LinuxLauncher::recover(
     const std::list<ContainerState>& states)
 {
